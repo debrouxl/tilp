@@ -3,7 +3,7 @@ dnl $Id$
 
 # Init.
 AC_PREREQ(2.57)
-AC_INIT(TiLP, 6.80, [tilp-users@lists.sourceforge.net])
+AC_INIT(TiLP2, 0.03, [tilp-users@lists.sourceforge.net])
 
 AM_INIT_AUTOMAKE([dist-bzip2])
 AM_MAINTAINER_MODE
@@ -16,19 +16,14 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
   Makefile
   build/Makefile
-  desktop/Makefile
   glade/Makefile
   help/Makefile
   icons/Makefile
   intl/Makefile
   man/Makefile
   pixmaps/Makefile
-  plugins/Makefile
   po/Makefile.in
-  registry/Makefile
   src/Makefile
-  tilp.lsm
-  tilp.spec
 ])
 
 AC_MSG_CHECKING([for something to drink while compiling])
@@ -51,17 +46,17 @@ AM_CONDITIONAL(USE_GROFF, test "$GROFF" != "no")
 
 # Checks for libraries.
 AM_GNU_GETTEXT
-AM_GNU_GETTEXT_VERSION(0.13.1)
+AM_GNU_GETTEXT_VERSION(0.14.5)
 
-PKG_CHECK_MODULES(TICABLES, ticables >= 3.8.0)
+PKG_CHECK_MODULES(TICABLES, ticables2 >= 0.0.1)
 AC_SUBST(TICABLES_CFLAGS)
 AC_SUBST(TICABLES_LIBS)
 
-PKG_CHECK_MODULES(TIFILES, tifiles >= 0.6.1)
+PKG_CHECK_MODULES(TIFILES, tifiles2 >= 0.0.5)
 AC_SUBST(TIFILES_CFLAGS)
 AC_SUBST(TIFILES_LIBS)
 
-PKG_CHECK_MODULES(TICALCS, ticalcs >= 4.5.4)
+PKG_CHECK_MODULES(TICALCS, ticalcs2 >= 0.0.1)
 AC_SUBST(TICALCS_CFLAGS)
 AC_SUBST(TICALCS_LIBS)
 
@@ -88,7 +83,7 @@ AC_SUBST(LIBZ)
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
-AC_CHECK_HEADERS([tilp/ticables.h tilp/ticalcs.h tilp/tifiles.h tilp/macros.h])
+AC_CHECK_HEADERS([tilp2/ticables.h tilp2/ticalcs.h tilp2/tifiles.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -100,17 +95,9 @@ AC_STRUCT_TM
 
 # Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
-AC_FUNC_MALLOC
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
-AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([getcwd memset mkdir strcasecmp strchr strdup strrchr strstr strtol])
-
-# pass some variables to  plugins
-tilp_plugin_dir='${libdir}/tilp'
-AC_SUBST(tilp_plugin_dir)
-tilp_pixmap_dir='${datadir}/tilp/pixmaps'
-AC_SUBST(tilp_pixmap_dir)
 
 # Option to allow user to go outside his home directory.
 AC_ARG_ENABLE(exit-homedir,
@@ -199,9 +186,13 @@ esac
 
 case "$host" in
   *-*-linux*) EXFL="-Wl,--export-dynamic" ;;
+  *-*-mingw*) EXFL="-lcomdlg32" ;;
   *)          EXFL="" ;;
 esac
 LDFLAGS="$LDFLAGS $EXFL"
+
+AC_SUBST(CFLAGS)
+AC_SUBST(LDFLAGS)
 
 # Output.
 AC_OUTPUT

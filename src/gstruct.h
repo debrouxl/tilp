@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,71 +17,51 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- */
+*/
 
 #ifndef __STRUCT_H__
 #define __STRUCT_H__
 
 #include <gtk/gtk.h>
 
-
 /* The main window */
-extern GtkWidget *main_wnd;
-extern GtkWidget *clist_wnd;
-extern GtkWidget *ctree_wnd;
-extern GtkWidget *scrn_wnd;
-extern GtkWidget *status;
+extern GtkWidget* main_wnd;
+extern GtkWidget* clist_wnd;
+extern GtkWidget* ctree_wnd;
+extern GtkWidget* screen_wnd;
+extern GtkWidget* status;
 
 /* This struct is used by the toolbar */
-extern struct toolbar_window {
-	GtkWidget *toolbar;
-	GtkWidget *button10;
-	GtkWidget *button11;
-	GtkWidget *button12;
-	GtkWidget *button13;
-	GtkWidget *button14;
-	GtkWidget *button20;
-	GtkWidget *button21;
-	GtkWidget *button22;
-} toolbar_win;
+extern struct toolbar_window 
+{
+	GtkWidget* toolbar;
+	GtkWidget* button10;
+	GtkWidget* button11;
+	GtkWidget* button12;
+	GtkWidget* button13;
+	GtkWidget* button14;
+	GtkWidget* button15;
+
+	GtkWidget* button20;
+	GtkWidget* button21;
+	GtkWidget* button22;
+} toolbar_wnd;
 
 /* This struct is used by the CLabel window */
-extern struct clabel_window {
-	GtkWidget *widget;
-	GtkWidget *label11;
-	GtkWidget *label12;
-	GtkWidget *label13;
-	GtkWidget *label14;
-	GtkWidget *label15;
-	GtkWidget *label21;
-	GtkWidget *label22;
-	GtkWidget *label23;
-	GtkWidget *label24;
-	GtkWidget *label25;
-} clabel_win;
+extern struct label_window 
+{
+	GtkWidget* label21;
+	GtkWidget* label22;
+} label_wnd;
 
 /* This struct is used to display and manage the progress bar dialog box */
-extern struct progress_window {
-	GtkWidget *window;
-	GtkWidget *pbar1;
-	GtkWidget *pbar2;
-	GtkWidget *label;
-	GtkWidget *label_rate;
-} p_win;
-
-/* This struct is used by the Group File Manager */
-extern struct gfm_window {
-	GtkWidget *widget;
-	GtkWidget *label11;
-	GtkWidget *label12;
-	GtkWidget *label13;
-	GtkWidget *label14;
-	GtkWidget *label15;
-	GtkWidget *label21;
-	GtkWidget *label22;
-	GtkWidget *label23;
-	GtkWidget *label24;
-	GtkWidget *label25;
-} gfm_win;
+extern struct pbar_window 
+{
+	GtkWidget* window;
+	GtkWidget* pbar1;
+	GtkWidget* pbar2;
+	GtkWidget* label;
+	GtkWidget* label_rate;
+} pbar_wnd;
 
 #endif

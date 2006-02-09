@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *
  *  This program is free software you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,18 +22,24 @@
 #ifndef __CTREE_H__
 #define __CTREE_H__
 
+/*
 enum {
   CTREE_NAME, CTREE_ATTR, CTREE_TYPE, CTREE_SIZE,
   CTREE_DATA, CTREE_FONT, CTREE_ICON,
   CTREE_NUMBER
 };
 #define CTREE_NCOLS CTREE_DATA
+*/
 
+#define NODE0 _("Calc")
 #define NODE1 _("Screen")
 #define NODE2 _("Operating System")
 #define NODE3 _("Variables")
-#define NODE4 _("Applications")
-#define NODEx _("Any Folder")
+#define NODE4 _("Apps/Archive")
+#define NODE5 _("ID-LIST")
+#define NODE6 _("Clock")
+#define NODEx _("A Folder")
+#define NODE7 _("Certificate")
 
 void ctree_init(void);
 void ctree_refresh(void);

@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,8 +19,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef STRUCT_H
-#define STRUCT_H
+/*
+	Structure definitions.
+*/
+
+#ifndef __TILP_STRUCT__
+#define __TILP_STRUCT__
 
 #ifndef __MACOSX__
 # include <glib.h>
@@ -40,84 +44,64 @@ extern "C" {
 
 #define MAXCHARS 256
 
-  extern TicableLinkCable link_cable;
-  extern TicalcFncts ti_calc;
-  extern TicalcInfoUpdate info_update;
+/* This struct contains the general options to configure the program */
+typedef struct 
+{
+	// device
+	int		cable_model;
+	int		cable_port;
+	int		cable_timeout;
+	int		cable_delay;
+	int		calc_model;
 
-
+	// gui
 #ifndef __MACOSX__
-  typedef struct {
-    gchar *base_dir;		// base directory
-    gchar *locale_dir;		// locale
-    gchar *manpage_dir;		// manpages
-    gchar *help_dir;		// help files
-    gchar *pixmap_dir;		// pixmaps
-    gchar *icon_dir;		// icons
-    gchar *plugin_dir;		// plug-ins
-    gchar *glade_dir;		// directory of files for Glade
-    gchar *home_dir;		// $HOME
-  } TilpInstPaths;
+    int		pane_x_size;
+    int		pane_y_size;
+
+	int		wnd_x_size1;
+	int		wnd_y_size1;
+
+	int		wnd_x_size2;
+	int		wnd_y_size2;
+
+    int		local_sort;
+    int		local_sort_order;
+#endif
+    int		remote_sort;
+    int		remote_sort_order;
+
+	int		fs_type;
+	int		full_gui;
+
+	// options
+	int		auto_detect;
+    int		local_path;
+    int		show_all;
+	int		overwrite;
+    int		recv_as_group;
+	
+	char*	working_dir;
+
+	// screen
+    int		screen_format;
+    int		screen_scaling;
+    int		screen_clipping;
+    int		screen_blurry;
+
+	// fonts
+#ifndef __MACOSX__
+    char*	remote_font_name;
+    char*	local_font_name;
 #endif
 
-
-/* This struct contains the general options to configure the program */
-  typedef struct {
-#ifndef __MACOSX__
-    int xsize;
-    int ysize;
-
-    int clist_sort;
-    int clist_sort_order;
-#endif /* !__MACOSX__ */
-
-    int ctree_sort;
-    int ctree_sort_order;
-
-    int path_mode;
-    int file_disp;
-
-    int use_checksum;
-    int single_or_group;
-    int confirm;
-
-    int screen_format;
-    int screen_scaling;
-    int screen_clipping;
-    int screen_blurry;
-
-    int clock_mode;
-    int date_format;
-    int time_format;
-
-#ifndef __MACOSX__
-    char *unzip_location;
-    char *unzip_options;
-    char *tar_location;
-    char *tar_options;
-    char *web_location;
-    char *web_options;
-
-    char *appsign_location;
-    char *appsign_options;
-
-    char left_font_name[MAXCHARS];
-    char right_font_name[MAXCHARS];
-
-    char locale[MAXCHARS];
-#endif /* !__MACOSX__ */
-
-    int console_mode;
-    int auto_detect;
-    int show_gui;
-
-    char *working_dir;
-
-    TicableLinkParam lp;
-  } TilpOptions;
+} TilpOptions;
 
 
 /* Used by the local directory list function */
-  typedef struct {
+typedef struct 
+{
+	// used for entries
     char *name;
     time_t date;
     off_t size;
@@ -131,58 +115,60 @@ extern "C" {
     mode_t attrib;
 #endif
 
-    char **actions;		// Ticalc action associated w/ the file
-  } TilpFileInfo;
-
+	// used for actions
+	FileContent* content;	// file content to send
+	int*		 selected;	// entry/entries is/are selected
+} FileEntry;
 
 /* Used to retrieve stats on the on-calc memory usage */
-  typedef struct {
-    int vars;			// number of vars
-    int folders;		// number of folders
-    int mem;			// memory used (not archive memory)
-    int archivemem;		// archive memory used
+typedef struct 
+{
+    int n_vars;			// number of vars
+    int n_folders;		// number of folders
+	int n_apps;			// number of FLASH apps
 
-    int flash;			// number of FLASH apps
-    int flashmem;		// FLASH mem used
+	int	mem_vars;		// memory used in RAM
+	int mem_apps;		// memory used in FLASH
 
-    int freemem;		// remaining memory
-  } TilpCalcMemInfo;
+    int mem_free;		// remaining memory
+} TilpMem;
 
 
 /* This struct is used by the CList window */
-  typedef struct {
-    GList *dirlist;		// linked list of files & directories
-    gchar *current_dir;		// current active directory
-    GList *selection;		// selection of files (send, view, ...)
-    GList *file_selection;	// selection of files (cut/copy/paste)
-    int copy_cut;		// action type
-  } TilpClistWin;
+typedef struct 
+{
+    GList* dirlist;			// linked list of files & directories
+    gchar* cwdir;			// current active directory
+
+    GList* selection;		// selection of files (data: FileEntry)
+    GList* file_selection;	// selection of files (data: char*)
+
+    int copy_cut;			// action type
+} TilpLocal;
 
 
 /* This struct is used by the CTree window */
-  typedef struct {
-    TNode *dirlist;		// linked list of variables & folders
-    TNode *var_tree;		// future use: tree of vars
-    TNode *app_tree;		// future use: tree of apps
-    unsigned int memory;	// memory free or used by calc
-    GList *selection;		// selection of variables
-    GList *selection2;		// selection of applications
-  } TilpCtreeWin;
+typedef struct 
+{
+    TNode*	var_tree;		// future use: tree of vars
+    TNode*	app_tree;		// future use: tree of apps
 
+    TilpMem	memory;			// memory free or used by calc
 
-/* Used by the screendump related boxes */
-  typedef struct {
-    uint8_t *bitmap;
-    int width;
-    int height;
-  } TilpScreen;
+    GList*	selection;		// selection of variables    (data: VarEntry)
+    GList*	selection2;		// selection of applications (data: VarEntry)
+} TilpRemote;
 
-  extern TilpOptions options;
-  extern TilpClistWin clist_win;
-  extern TilpCtreeWin ctree_win;
-#ifndef __MACOSX__
-  extern TilpInstPaths inst_paths;
-#endif /* !__MACOSX__ */
+/* Global variables */
+
+extern CableHandle* cable_handle;
+extern CalcHandle*  calc_handle;
+
+extern TilpOptions	options;
+extern TilpLocal	local;
+extern TilpRemote	remote;
+
+extern int			working_mode;
 
 #ifdef __cplusplus
 }

@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *
  *  This program is free software you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,32 +27,30 @@
 #include <glade/glade.h>
 #include <string.h>
 
-#include "tilp_core.h"
+#include "support.h"
 #include "screenshot.h"
 #include "support.h"
 #include "dboxes.h"
 #include "scroptions.h"
-#include "gtk_refresh.h"
+#include "filesel.h"
+#include "tilp_core.h"
 
 GtkWidget *scrn_win;
 static GtkWidget *scrn_img;
-extern TilpScreen ti_screen;
-static const gchar *create_fsel(void);
 
 gint display_screenshot_dbox()
 {
 	GladeXML *xml;
 	GdkPixbuf *pixbuf;
 
-	xml = glade_xml_new
-	    (tilp_paths_build_glade("screenshot-2.glade"),
-	     "screenshot_dbox", PACKAGE);
+	xml = glade_xml_new(tilp_paths_build_glade("screenshot-2.glade"), "screenshot_dbox", PACKAGE);
 	if (!xml)
 		g_error("GUI loading failed !\n");
-
 	glade_xml_signal_autoconnect(xml);
+
 	scrn_win = glade_xml_get_widget(xml, "screenshot_dbox");
 	scrn_img = glade_xml_get_widget(xml, "pixmap7");
+
 	pixbuf = create_pixbuf("screendump.xpm");
 	gtk_image_set_from_pixbuf(GTK_IMAGE(scrn_img), pixbuf);
 	g_object_unref(pixbuf);
@@ -62,21 +60,20 @@ gint display_screenshot_dbox()
 	return 0;
 }
 
-GLADE_CB void on_sc_load1_activate(GtkMenuItem * menuitem,
-				   gpointer user_data)
+GLADE_CB void on_sc_load1_activate(GtkMenuItem * menuitem, gpointer user_data)
 {
 	const gchar *filename;
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
 
-	filename = create_fsel();
+	filename = create_fsel(local.cwdir, NULL, "*.jpg;*.png;*.eps;*.pdf;*.xpm;*.bmp", FALSE);
 	if (!filename)
 		return;
 
 	pixbuf = gdk_pixbuf_new_from_file(filename, &error);
 	if (!pixbuf) 
 	{
-		printl(2, "Failed to load pixbuf file: %s: %s\n",
+		tilp_warning("Failed to load pixbuf file: %s: %s\n",
 			filename, error->message);
 		g_error_free(error);
 	}
@@ -98,54 +95,68 @@ GLADE_CB void on_sc_save1_activate(GtkMenuItem * menuitem,
 	if(screen_success == FALSE)
 		return;
 
-	switch (options.screen_format) {
+	switch (options.screen_format) 
+	{
 	case XPM:
-	case PCX:
-	case BMP:
-		msg_box("Information",
-			"Sorry, these formats are not supported any longer.");
-		return;
-	case JPG:
-		type = "jpeg";
-		filename = create_fsel();
+		type = "xpm";
+		filename = create_fsel(local.cwdir, "screenshot.xpm", "*.xpm", TRUE);
 		if (!filename)
 			return;
+
 		pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(scrn_img));
-		result =
-		    gdk_pixbuf_save(pixbuf, filename, type, &error,
-				    "quality", "100", NULL);
+		result = gdk_pixbuf_save(pixbuf, filename, type, &error, NULL);
+		break;
+	case BMP:
+		type = "bmp";
+		filename = create_fsel(local.cwdir, "screenshot.bmp", "*.bmp", TRUE);
+		if (!filename)
+			return;
+
+		pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(scrn_img));
+		result = gdk_pixbuf_save(pixbuf, filename, type, &error, NULL);
+		break;
+	case JPG:
+		type = "jpeg";
+		filename = create_fsel(local.cwdir, "screenshot.jpg", "*.jpg", TRUE);
+		if (!filename)
+			return;
+
+		pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(scrn_img));
+		result = gdk_pixbuf_save(pixbuf, filename, type, &error, "quality", "100", NULL);
 		break;
 	case PNG:
 		type = "png";
-		filename = create_fsel();
+		filename = create_fsel(local.cwdir, "screenshot.png", "*.png", TRUE);
 		if (!filename)
 			return;
+
 		pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(scrn_img));
-		result =
-		    gdk_pixbuf_save(pixbuf, filename, type, &error, NULL);
+		result = gdk_pixbuf_save(pixbuf, filename, type, &error, NULL);
 		break;
 	case PDF:
 		type = "pdf";
-		filename = create_fsel();
+		filename = create_fsel(local.cwdir, "screenshot.pdf", "*.pdf", TRUE);
 		if (!filename)
 			return;
-		result = tilp_screen_write_pdf(filename, &error);
+
+		result = screen_write_pdf(filename, &error);
 		break;
 	case EPS:
 		type = "eps";
-		filename = create_fsel();
+		filename = create_fsel(local.cwdir, "screenshot.eps", "*.eps", TRUE);
 		if (!filename)
 			return;
-		result = tilp_screen_write_eps(filename, &error);
+
+		result = screen_write_eps(filename, &error);
 		break;
 	default:
 		type = "";
 		break;
 	}
 	
-	if (result == FALSE) {
-		printl(2, "Failed to save pixbuf file: %s: %s\n",
-			filename, error->message);
+	if (result == FALSE) 
+	{
+		tilp_warning("Failed to save pixbuf file: %s: %s\n", filename, error->message);
 		g_error_free(error);
 	}
 	filename = NULL;
@@ -175,22 +186,25 @@ GLADE_CB void on_scdbox_button1_clicked(GtkButton * button,
 	guchar *bytemap;
 	gint w, h;
 
-	if (tilp_screen_capture()) {
+	if (screen_capture()) 
+	{
 		screen_success = FALSE;	
 		return;
-	} else
+	} 
+	else
+	{
 		screen_success = TRUE;
+	}
 	
-	w = ti_screen.width;
-	h = ti_screen.height;
+	w = screen.width;
+	h = screen.height;
 
 	if (options.screen_blurry)
-		bytemap = tilp_screen_blurry();
+		bytemap = screen_blurry();
 	else
-		bytemap = tilp_screen_convert();
+		bytemap = screen_convert();
 
-	pixbuf =
-	    gdk_pixbuf_new_from_data(bytemap, GDK_COLORSPACE_RGB, FALSE,
+	pixbuf = gdk_pixbuf_new_from_data(bytemap, GDK_COLORSPACE_RGB, FALSE,
 				     8, w, h, 3 * w, destroy_pixbuf, NULL);
 	gtk_image_set_from_pixbuf(GTK_IMAGE(scrn_img), pixbuf);
 	g_object_unref(pixbuf);
@@ -209,81 +223,9 @@ GLADE_CB void on_scdbox_button3_clicked(GtkButton * button,
 	gtk_widget_destroy(scrn_win);
 }
 
-extern void on_manual1_activate(GtkMenuItem * menuitem,
-				gpointer user_data);
+extern void on_manual1_activate(GtkMenuItem * menuitem, gpointer user_data);
 
-GLADE_CB void on_scdbox_button4_clicked(GtkButton * button,
-					gpointer user_data)
+GLADE_CB void on_scdbox_button4_clicked(GtkButton * button, gpointer user_data)
 {
 	on_manual1_activate(NULL, NULL);
 } 
-
-static gchar *filename = NULL;
-
-static void store_filename(GtkFileSelection * file_selector,
-			   gpointer user_data)
-{
-	filename = (gchar *)
-	    gtk_file_selection_get_filename(GTK_FILE_SELECTION(user_data));
-} 
-
-static void cancel_filename(GtkButton * button, gpointer user_data)
-{
-	filename = "";
-} 
-
-static const gchar *create_fsel(void)
-{
-	GtkWidget *fs;
-	gchar *ext;
-
-	switch (options.screen_format) {
-	case JPG:
-		ext = "*.jpg";
-		break;
-	case PNG:
-		ext = "*.png";
-		break;
-	case PDF:
-		ext = "*.pdf";
-		break;
-	case EPS:
-		ext = "*.eps";
-		break;
-	default:
-		ext = "";
-		break;
-	}
-
-	fs = gtk_file_selection_new("Select a File.");
-	gtk_file_selection_complete(GTK_FILE_SELECTION(fs), ext);
-	g_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(fs)->ok_button),
-			 "clicked", G_CALLBACK(store_filename), fs);
-	g_signal_connect(GTK_OBJECT
-			 (GTK_FILE_SELECTION(fs)->cancel_button),
-			 "clicked", G_CALLBACK(cancel_filename), fs);
-	g_signal_connect_swapped(GTK_OBJECT
-				 (GTK_FILE_SELECTION(fs)->ok_button),
-				 "clicked",
-				 G_CALLBACK(gtk_widget_destroy),
-				 (gpointer) fs);
-	g_signal_connect_swapped(GTK_OBJECT
-				 (GTK_FILE_SELECTION(fs)->cancel_button),
-				 "clicked", G_CALLBACK(gtk_widget_destroy),
-				 (gpointer) fs);
-
-	filename = NULL;
-	gtk_widget_show(fs);
-	while (filename == NULL)
-		GTK_REFRESH();
-
-	if (!strcmp(filename, ""))
-		return NULL;
-	else
-		return filename;
-}
-
-
-
-
-

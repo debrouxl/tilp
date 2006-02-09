@@ -237,7 +237,7 @@
 		      <property name="visible">True</property>
 		      <property name="can_focus">True</property>
 		      <property name="history">0</property>
-		      <signal name="changed" handler="comm_optionmenu2_changed" last_modification_time="Tue, 06 Apr 2004 16:54:20 GMT"/>
+		      <signal name="changed" handler="clock_optionmenu2_changed" last_modification_time="Mon, 20 Jun 2005 08:26:47 GMT"/>
 
 		      <child>
 			<widget class="GtkMenu" id="menu2">
@@ -373,7 +373,7 @@
 		      <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		      <property name="snap_to_ticks">False</property>
 		      <property name="wrap">False</property>
-		      <property name="adjustment">2000 2000 3000 1 10 10</property>
+		      <property name="adjustment">2000 1997 3000 1 10 10</property>
 		      <signal name="changed" handler="clock_spinbutton3_changed" object="spinbutton3"/>
 		    </widget>
 		    <packing>
@@ -483,7 +483,7 @@
 		      <property name="visible">True</property>
 		      <property name="can_focus">True</property>
 		      <property name="history">0</property>
-		      <signal name="changed" handler="comm_optionmenu1_changed" last_modification_time="Tue, 06 Apr 2004 16:54:09 GMT"/>
+		      <signal name="changed" handler="clock_optionmenu1_changed" last_modification_time="Mon, 20 Jun 2005 08:26:26 GMT"/>
 
 		      <child>
 			<widget class="GtkMenu" id="menu1">

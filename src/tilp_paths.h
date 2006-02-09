@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,24 +19,20 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef PATHS_H
-#define PATHS_H
+/*
+	Platform independant paths
+*/
+
+#ifndef __TILP_PATHS__
+#define __TILP_PATHS__
 
 #include <stdio.h>
-
-/* in tilp_printl.c */
-const gchar * tilp_get_logfile (void);
-FILE * tilp_open_log (const char *mode);
 
 /* Paths */
 #if defined(__LINUX__) || defined(__BSD__)
 # define INI_FILE  "/.tilp"
-# define REG_FILE "tilp.registry"
-# define LOG_FILE tilp_get_logfile()
 #elif defined(__WIN32__)
 # define INI_FILE  "tilp.ini"
-# define REG_FILE "tilp.registry"
-# define LOG_FILE tilp_get_logfile()
 #endif
 
 /* Temporary filenames (used by cb_calc.c) */
@@ -44,5 +40,26 @@ FILE * tilp_open_log (const char *mode);
 #define TMPFILE_ROMDUMP  "tilp.romdump"
 #define TMPFILE_GROUP    "tilp.group"
 #define TMPFILE_FLASHAPP "tilp.flashapp"
+
+#ifndef __MACOSX__
+typedef struct 
+{
+    gchar *base_dir;		// base directory
+    gchar *locale_dir;		// locale
+    gchar *manpage_dir;		// manpages
+    gchar *help_dir;		// help files
+    gchar *pixmap_dir;		// pixmaps
+    gchar *icon_dir;		// icons
+    gchar *glade_dir;		// directory of files for Glade
+    gchar *home_dir;		// $HOME
+} TilpInstPaths;
+#endif
+
+#ifndef __MACOSX__
+extern TilpInstPaths	inst_paths;
+#endif /* !__MACOSX__ */
+
+int tilp_paths_init(void);
+const char *tilp_paths_build_glade(const char *name);
 
 #endif

@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *  Copyright (C) 2005 Julien BLACHE <jb@jblache.org>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,25 +20,37 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/*
+	Screen shot management
+*/
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-
-#include "tilp_core.h"
-TilpScreen ti_screen = { 0 };
-
 #ifdef HAVE_LIBZ
 # include <zlib.h>
 #endif
+#define Z_OK 0
+
+#include "tilp_core.h"
+
+TilpScreen screen = { 0 };	// change to screen (like local/remote)
 
 /*
   Do a screen capture
 */
-int tilp_screen_capture(void)
+int screen_capture(void)
 {
+	CalcScreenCoord sc;
 	int err;
-	TicalcScreenCoord sc;
+
+	if(tilp_calc_isready())
+		return -1;
 
 	/* Place a progress bar */
 	gif->create_pbar_type1(_("Screendump"));
@@ -46,19 +58,24 @@ int tilp_screen_capture(void)
 	/* 
 	   Get a screen capture
 	 */
-	err =
-	    ti_calc.screendump(&(ti_screen.bitmap),
-			       options.screen_clipping, &sc);
-	if (options.screen_clipping == FULL_SCREEN) {
-		ti_screen.width = sc.width;
-		ti_screen.height = sc.height;
-	} else {
-		ti_screen.width = sc.clipped_width;
-		ti_screen.height = sc.clipped_height;
+	sc.format = options.screen_clipping;
+	err = ticalcs_calc_recv_screen(calc_handle, &sc, &screen.bitmap);
+
+	if (options.screen_clipping == SCREEN_FULL) 
+	{
+		screen.width = sc.width;
+		screen.height = sc.height;
+	} else 
+	{
+		screen.width = sc.clipped_width;
+		screen.height = sc.clipped_height;
 	}
+
 	gif->destroy_pbar();
-	if (tilp_error(err))
+
+	if (tilp_err(err))
 		return -1;
+
 	return 0;
 }
 
@@ -67,32 +84,38 @@ int tilp_screen_capture(void)
   Convert the bitmap into a B&W bytemap.
   The returned RRGGBB array must be freed when no longer used.
 */
-uint8_t *tilp_screen_convert(void)
+uint8_t *screen_convert(void)
 {
 	guchar *bitmap, *bytemap, data, mask;
 	gint w;
 	gint h;
 	int row, col, bit, pixel, pos;
 
-	bitmap = ti_screen.bitmap;
-	w = ti_screen.width;
-	h = ti_screen.height;
+	bitmap = screen.bitmap;
+	w = screen.width;
+	h = screen.height;
 
 	bytemap = g_malloc(3 * w * h);
 
-	for (row = 0; row < h; row++) {
-		for (col = 0; col < (w >> 3); col++) {
+	for (row = 0; row < h; row++) 
+	{
+		for (col = 0; col < (w >> 3); col++) 
+		{
 			data = bitmap[(w >> 3) * row + col];
 			mask = 0x80;
 
-			for (bit = 0; bit < 8; bit++) {
+			for (bit = 0; bit < 8; bit++) 
+			{
 				pixel = data & mask;
 				pos = row * w + 8 * col + bit;
-				if (pixel) {
+				if (pixel) 
+				{
 					bytemap[3 * pos + 0] = 0;
 					bytemap[3 * pos + 1] = 0;
 					bytemap[3 * pos + 2] = 0;
-				} else {
+				} 
+				else 
+				{
 					bytemap[3 * pos + 0] = 255;
 					bytemap[3 * pos + 1] = 255;
 					bytemap[3 * pos + 2] = 255;
@@ -109,32 +132,37 @@ uint8_t *tilp_screen_convert(void)
   Convert the bitmap into a 2-colors bytemap.
   The returned RRGGBB array must be freed when no longer used.
 */
-uint8_t *tilp_screen_blurry(void)
+uint8_t *screen_blurry(void)
 {
 	guchar *bitmap, *bytemap, data, mask;
 	gint w;
 	gint h;
 	int row, col, bit, pixel, pos;
 
-	bitmap = ti_screen.bitmap;
-	w = ti_screen.width;
-	h = ti_screen.height;
+	bitmap = screen.bitmap;
+	w = screen.width;
+	h = screen.height;
 
 	bytemap = g_malloc(3 * w * h);
 
-	for (row = 0; row < h; row++) {
-		for (col = 0; col < (w >> 3); col++) {
+	for (row = 0; row < h; row++) 
+	{
+		for (col = 0; col < (w >> 3); col++) 
+		{
 			data = bitmap[(w >> 3) * row + col];
 			mask = 0x80;
 
-			for (bit = 0; bit < 8; bit++) {
+			for (bit = 0; bit < 8; bit++) 
+			{
 				pixel = data & mask;
 				pos = row * w + 8 * col + bit;
-				if (pixel) {
+				if (pixel) 
+				{
 					bytemap[3 * pos + 0] = 0x00;
 					bytemap[3 * pos + 1] = 0x00;
 					bytemap[3 * pos + 2] = 0x34;
-				} else {
+				} else 
+				{
 					bytemap[3 * pos + 0] = 0xa8;
 					bytemap[3 * pos + 1] = 0xb4;
 					bytemap[3 * pos + 2] = 0xa8;
@@ -154,11 +182,11 @@ static gboolean write_compressed_a85_screen(FILE *fp, guchar *data, unsigned lon
 {
 	guchar *ubuf, *cbuf;
 	unsigned long cbuflen;
-	int i, j;
+	unsigned int i, j;
 #ifdef HAVE_LIBZ
 	int ret;
 #endif
-	int a85count;
+	unsigned int a85count;
 	unsigned long a85tuple;
 	guchar a85block[6];
 
@@ -238,7 +266,7 @@ static gboolean write_compressed_a85_screen(FILE *fp, guchar *data, unsigned lon
 				 * hence -> a85block[4-j]
 				 */
 				for (j = 0; j < 5; j++) {
-					a85block[4-j] = a85tuple % 85 + '!';
+					a85block[4-j] = (guchar)(a85tuple % 85 + '!');
 					a85tuple /= 85;
 				}
 			}
@@ -259,7 +287,7 @@ static gboolean write_compressed_a85_screen(FILE *fp, guchar *data, unsigned lon
 	if (a85count > 0) {
 		a85count++;
 		for (j = 0; j <= a85count; j++) {
-			a85block[j] = a85tuple % 85 + '!';
+			a85block[j] = (guchar)(a85tuple % 85 + '!'); 
 			a85tuple /= 85;
 		}
                 /* Reverse order */
@@ -287,7 +315,7 @@ static gboolean write_compressed_a85_screen(FILE *fp, guchar *data, unsigned lon
 /*
  * Write out an Encapsulated PostScript file.
  */
-gboolean tilp_screen_write_eps(const gchar *filename, GError **error)
+gboolean screen_write_eps(const gchar *filename, GError **error)
 {
 	int h, w;
 	FILE *fp;
@@ -302,15 +330,15 @@ gboolean tilp_screen_write_eps(const gchar *filename, GError **error)
 		return FALSE;
 	}
 
-	h = ti_screen.height;
-	w = ti_screen.width;
+	h = screen.height;
+	w = screen.width;
 
 	time(&t);
 
 	fprintf(fp, "%%!PS-Adobe-3.0 EPSF-3.0\n");
 	fprintf(fp, "%%%%Creator: TiLP %s / PostScript output Copyright (C) 2005 Julien BLACHE\n", TILP_VERSION);
 	fprintf(fp, "%%%%Title: TiLP %s screenshot\n",
-		tifiles_calctype_to_string(options.lp.calc_type));
+		tifiles_model_to_string(options.calc_model));
 	fprintf(fp, "%%%%CreationDate: %s", ctime(&t));
 	fprintf(fp, "%%%%LanguageLevel: 3\n");
 	fprintf(fp, "%%%%BoundingBox: 0 0 %d %d\n", w, h);
@@ -324,7 +352,7 @@ gboolean tilp_screen_write_eps(const gchar *filename, GError **error)
 		fprintf(fp, "%d %d 8 [%d 0 0 -%d 0 %d] currentfile /ASCII85Decode filter false 3 colorimage\n", w, h, w, h, h);
 #endif
 
-		buf = tilp_screen_blurry();
+		buf = screen_blurry();
 
 		ret = write_compressed_a85_screen(fp, buf, (h * w * 3), FALSE, &err);
 
@@ -344,7 +372,7 @@ gboolean tilp_screen_write_eps(const gchar *filename, GError **error)
 		fprintf(fp, "%d %d 1 [%d 0 0 -%d 0 %d] currentfile /ASCII85Decode filter image\n", w, h, w, h, h);
 #endif
 
-		ret = write_compressed_a85_screen(fp, ti_screen.bitmap, (h * w) / 8, TRUE, &err);
+		ret = write_compressed_a85_screen(fp, screen.bitmap, (h * w) / 8, TRUE, &err);
 
 		if (!ret) {
 			g_propagate_error(error, err);
@@ -363,7 +391,7 @@ gboolean tilp_screen_write_eps(const gchar *filename, GError **error)
 /*
  * Write out a PDF file.
  */
-gboolean tilp_screen_write_pdf(const gchar *filename, GError **error)
+gboolean screen_write_pdf(const gchar *filename, GError **error)
 {
 	int h, w;
 	FILE *fp;
@@ -380,8 +408,8 @@ gboolean tilp_screen_write_pdf(const gchar *filename, GError **error)
 		return FALSE;
 	}
 
-	h = ti_screen.height;
-	w = ti_screen.width;
+	h = screen.height;
+	w = screen.width;
 
 	tt = time(NULL);
 	t = gmtime(&tt);
@@ -449,7 +477,7 @@ gboolean tilp_screen_write_pdf(const gchar *filename, GError **error)
 #endif
 		fprintf(fp, "ID\n");
 
-		buf = tilp_screen_blurry();
+		buf = screen_blurry();
 
 		ret = write_compressed_a85_screen(fp, buf, (h * w * 3), FALSE, &err);
 
@@ -473,7 +501,7 @@ gboolean tilp_screen_write_pdf(const gchar *filename, GError **error)
 #endif
 		fprintf(fp, "ID\n");
 
-		ret = write_compressed_a85_screen(fp, ti_screen.bitmap, (h * w) / 8, TRUE, &err);
+		ret = write_compressed_a85_screen(fp, screen.bitmap, (h * w) / 8, TRUE, &err);
 
 		if (!ret) {
 			g_propagate_error(error, err);
@@ -509,7 +537,7 @@ gboolean tilp_screen_write_pdf(const gchar *filename, GError **error)
 
 	fprintf(fp, "7 0 obj\n");
 	fprintf(fp, "   << /Title (TiLP %s screenshot)\n",
-		tifiles_calctype_to_string(options.lp.calc_type));
+		tifiles_model_to_string(options.calc_model));
 	fprintf(fp, "      /Creator (TiLP / PDF output Copyright (C) 2005 Julien BLACHE)\n");
 	fprintf(fp, "      /Producer (TiLP %s)\n", TILP_VERSION);
 	fprintf(fp, "      /CreationDate (D:%04d%02d%02d%02d%02d%02d+00'00')\n",

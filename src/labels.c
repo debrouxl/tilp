@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,11 +27,11 @@
 #include "tilp_core.h"
 #include "gstruct.h"
 
-struct clabel_window clabel_win = { 0 };
+struct label_window label_wnd = { 0 };
 
 #ifdef __WIN32__
 #define snprintf _snprintf
-#endif				/*  */
+#endif
 
 static char* format(char *src, char *dst)
 {
@@ -56,8 +56,9 @@ static char* format(char *src, char *dst)
 #endif
   
 	// count number of path elements (slashes)
-	for(n = 0, p = src; ; n++) {
-		p = (char *)strchr(p, DIR_SEPARATOR_C);	
+	for(n = 0, p = src; ; n++) 
+	{
+		p = (char *)strchr(p, G_DIR_SEPARATOR);	
 		if(!p)
 			break;
 		p++;
@@ -69,14 +70,14 @@ static char* format(char *src, char *dst)
 		left = strdup(path);
 		right = strdup(path);
 
-		p = (char *)strchr(left, DIR_SEPARATOR_C);		// first slash (head)
+		p = (char *)strchr(left, G_DIR_SEPARATOR);		// first slash (head)
 		*p = '\0';
 
-		p = (char *)strrchr(right, DIR_SEPARATOR_C);	// last slash (tail)
+		p = (char *)strrchr(right, G_DIR_SEPARATOR);	// last slash (tail)
 
 		strcpy(dst, header);
 		strcat(dst, left);
-		strcat(dst, DIR_SEPARATOR_S);
+		strcat(dst, G_DIR_SEPARATOR_S);
 		strcat(dst, "...");
 		strcat(dst, p);
 		
@@ -93,28 +94,23 @@ static char* format(char *src, char *dst)
 /* Refresh the info window */
 void labels_refresh(void)
 {
-	gchar buffer[256];
+	gchar str[256];
 	gsize br, bw;
 	gchar *utf8;
 	gchar path[256];
 
-	switch (ti_calc.memory) {
-	case MEMORY_FREE:
-		snprintf(buffer, MAXCHARS, _("Memory free: %u bytes"),
-			 ctree_win.memory);
-		break;
-	case MEMORY_USED:
-		snprintf(buffer, MAXCHARS, _("Memory used: %u bytes"),
-			 ctree_win.memory);
-		break;
-	case MEMORY_NONE:
-		snprintf(buffer, MAXCHARS, _("Memory used: %s"), _("N/A"));
-		break;
-	}
-	gtk_label_set_text(GTK_LABEL(clabel_win.label21), buffer);
+	if(remote.memory.mem_free == -1)
+		snprintf(str, sizeof(str), _("Memory used: %u bytes"), remote.memory.mem_vars);
+	else
+		snprintf(str, sizeof(str), _("Memory free/used: %u/%u bytes"),
+			remote.memory.mem_free, remote.memory.mem_vars);
+
+	gtk_label_set_text(GTK_LABEL(label_wnd.label21), str);
 	
-	utf8 = g_filename_to_utf8(clist_win.current_dir, -1, &br, &bw, NULL);
+	utf8 = g_filename_to_utf8(local.cwdir, -1, &br, &bw, NULL);
 	format(utf8, path);
-	snprintf(buffer, MAXCHARS, _("Current directory: %s"), path);
-	gtk_label_set_text(GTK_LABEL(clabel_win.label22), buffer);
+	g_free(utf8);
+
+	snprintf(str, sizeof(str), _("Folder: %s"), path);
+	gtk_label_set_text(GTK_LABEL(label_wnd.label22), str);
 }

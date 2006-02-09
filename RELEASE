@@ -1,15 +1,10 @@
 			[ Release notes ]
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!! Warning: given that TiLP-II is now mature, TiLP is stated as obsolete. !!!
-!!! The TiLP team does not provide support for TiLP-I any longer.					 !!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-Previous version: 6.78b		(29/04/2005)
-Current version:  6.80		(19/08/2005)
-Add-on version:   6.80b		(01/01/2005)
+Previous version: 0.02		(02/10/2005)
+Current version:  0.03		(28/01/2006)
+Add-on version:   0.03b   (01/02/2006)
 
 SubVersion (CVS) revision: $Id$
 
@@ -23,15 +18,15 @@ a Linux/Win32/Mac OS-X driver on the Linux Programmer Group at
 For the other link cables, no driver is needed because it's provided.
 
 Note: direct USB cable of TI84+ / TI89 Titanium is currenly unusable by TiLP 
-		  but supported by our driver.
+	but supported by our driver. Preliminary support exists for development 
+	purposes only.
 
 
 New capabilities:
 -----------------
 
-	- PDF/EPS image support (w/ compression) for screenshots 
-		(Julien Blache's contribution)
-		
+	- TiGroup (*.tig) file support
+	
 	- the installer can download & install the GTK+ libraries
 	- the installer copies the LPG's SilverLink driver. No need to download it for now.
 
@@ -39,28 +34,14 @@ New capabilities:
 Improvements:
 -------------
 
-	- [Linux] can be compiled with gcc 4.0 for now.
-	- [Win32] the installer now copies the SilverLink driver files, 
-							don't need to download them !
-	- virtual link cable support
+	- support Unicode (UTF-8) filenames
 
 
 Bug fixes:
 ----------
 
-	- various bug in the cable management layer
-	- possible buffer overflow with recv_packet (usually occurs with 
-				virtual links because the received length is invalid).
-	- fixed detection of TI file signature (not case sensitive)
-	- make loading of FLASH OS more robust against file 'garbaged' by TI.
-
-
-Known problems:
----------------
-
-	- [Win32]: the GTK-Wimp theme displays a lot of warning under non-NT Windows. 
-		You can disable it by using the GTK theme selector.
-	- [Linux]: don't user kernel module for SilverLink, use built-in ticables support instead.
+	- cable bug fixes
+	- cable probe: use first cable instead of the last one.
 
 
 Bug report:

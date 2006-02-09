@@ -1,8 +1,8 @@
 /* Hey EMACS -*- linux-c -*- */
 /* $Id$ */
 
-/*  tilp - Ti Linking Program
- *  Copyright (C) 1999-2004  Romain Lievin
+/*  TiLP - Ti Linking Program
+ *  Copyright (C) 1999-2005  Romain Lievin
  *
  *  This program is free software you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
-#endif				/*  */
+#endif				
 
 #include <gtk/gtk.h>
 #include <glade/glade.h>
@@ -29,35 +29,35 @@
 
 #include "dboxes.h"
 #include "support.h"
-
-#include "tilp_defs.h"
 #include "tilp_core.h"
+
 static gint ret_val = 0;
-void msg_box(const gchar * title, gchar * message)
+
+int msg_box1(const gchar * title, gchar * message)
 {
 	GtkWidget *dialog, *label;
 	gint result;
 	gint msg_type = -1;
+
 	if (!strcmp(title, _("Information")))
 		msg_type = GTK_MESSAGE_INFO;
-
 	else if (!strcmp(title, _("Warning")))
 		msg_type = GTK_MESSAGE_WARNING;
-
 	else if (!strcmp(title, _("Question")))
 		msg_type = GTK_MESSAGE_QUESTION;
-
 	else if (!strcmp(title, _("Error")))
 		msg_type = GTK_MESSAGE_ERROR;
-	if (msg_type != -1) {
-		dialog =
-		    gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
+
+	if (msg_type != -1) 
+	{
+		dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
 					   msg_type, GTK_BUTTONS_CLOSE,
 					   message);
 		gtk_dialog_run(GTK_DIALOG(dialog));
-	} else {
-		dialog =
-		    gtk_dialog_new_with_buttons(title, GTK_WINDOW(NULL),
+	} 
+	else 
+	{
+		dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(NULL),
 						(GtkDialogFlags)
 						(GTK_DIALOG_MODAL),
 						GTK_STOCK_OK,
@@ -65,12 +65,12 @@ void msg_box(const gchar * title, gchar * message)
 		gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 						GTK_RESPONSE_OK);
 		label = gtk_label_new(message);
-		gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),
-				  label);
+		gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), label);
 		gtk_widget_show(label);
 
 		result = gtk_dialog_run(GTK_DIALOG(dialog));
-		switch (result) {
+		switch (result) 
+		{
 		case GTK_RESPONSE_OK:
 			break;
 		default:
@@ -78,34 +78,35 @@ void msg_box(const gchar * title, gchar * message)
 		}
 	}
 	gtk_widget_destroy(dialog);
+
+	return 0;
 }
+
 gint msg_box2(const char *title, char *message)
 {
 	GtkWidget *dialog;
 	gint result;
 	gint msg_type = -1;
+
 	if (!strcmp(title, _("Information")))
 		msg_type = GTK_MESSAGE_INFO;
-
 	else if (!strcmp(title, _("Warning")))
 		msg_type = GTK_MESSAGE_WARNING;
-
 	else if (!strcmp(title, _("Question")))
 		msg_type = GTK_MESSAGE_QUESTION;
-
 	else if (!strcmp(title, _("Error")))
 		msg_type = GTK_MESSAGE_ERROR;
-
 	else
 		msg_type = GTK_MESSAGE_INFO;
-	dialog =
-	    gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, msg_type,
+
+	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, msg_type,
 				   GTK_BUTTONS_OK_CANCEL, message);
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 					GTK_RESPONSE_CANCEL);
 
 	result = gtk_dialog_run(GTK_DIALOG(dialog));
-	switch (result) {
+	switch (result) 
+	{
 	case GTK_RESPONSE_OK:
 		gtk_widget_destroy(dialog);
 		return BUTTON1;
@@ -115,6 +116,7 @@ gint msg_box2(const char *title, char *message)
 		return BUTTON2;
 		break;
 	}
+
 	return 0;
 }
 
@@ -123,23 +125,22 @@ gint msg_box3(const char *title, char *message, const char *button1,
 {
 	GtkWidget *dialog, *label;
 	gint result;
+
 	dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(NULL),
 					     (GtkDialogFlags)
 					     (GTK_DIALOG_MODAL),
-					     GTK_STOCK_YES,
-					     GTK_RESPONSE_YES,
-					     GTK_STOCK_NO,
-					     GTK_RESPONSE_NO,
-					     GTK_STOCK_CANCEL,
-					     GTK_RESPONSE_CANCEL, NULL);
-	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
-					GTK_RESPONSE_CANCEL);
+					     button1, GTK_RESPONSE_YES,
+					     button2, GTK_RESPONSE_NO,
+					     button3, GTK_RESPONSE_CANCEL, 
+						 NULL);
+	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
 	label = gtk_label_new(message);
 	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), label);
 	gtk_widget_show(label);
 
 	result = gtk_dialog_run(GTK_DIALOG(dialog));
-	switch (result) {
+	switch (result) 
+	{
 	case GTK_RESPONSE_YES:
 		gtk_widget_destroy(dialog);
 		return BUTTON1;
@@ -153,6 +154,7 @@ gint msg_box3(const char *title, char *message, const char *button1,
 		return BUTTON3;
 		break;
 	}
+
 	return 0;
 }
 
@@ -160,6 +162,7 @@ gint msg_box4(const char *title, char *message)
 {
 	GtkWidget *dialog, *label;
 	gint result;
+
 	dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(NULL),
 					     (GtkDialogFlags)
 					     (GTK_DIALOG_MODAL),
@@ -174,7 +177,8 @@ gint msg_box4(const char *title, char *message)
 	gtk_widget_show(label);
 
 	result = gtk_dialog_run(GTK_DIALOG(dialog));
-	switch (result) {
+	switch (result) 
+	{
 	case GTK_RESPONSE_OK:
 		gtk_widget_destroy(dialog);
 		return BUTTON1;
@@ -184,13 +188,13 @@ gint msg_box4(const char *title, char *message)
 		return BUTTON2;
 		break;
 	}
+
 	return 0;
 }
 
 
 /* Create the dialog box entry and wait */
-char *msg_entry(const char *title, const char *message,
-		const char *content)
+char *msg_entry(const char *title, const char *message, const char *content)
 {
 	GladeXML *xml;
 	GtkWidget *data;
@@ -199,21 +203,29 @@ char *msg_entry(const char *title, const char *message,
 	gchar *ret = NULL;
 	gint result;
 	ret_val = 0;
+
 	xml = glade_xml_new
 	    (tilp_paths_build_glade("user_boxes-2.glade"), "entry_dbox",
 	     PACKAGE);
 	if (!xml)
 		g_error("dboxes.c: GUI loading failed !\n");
 	glade_xml_signal_autoconnect(xml);
+
 	dbox = data = glade_xml_get_widget(xml, "entry_dbox");
 	gtk_window_set_title(GTK_WINDOW(data), title);
+
 	data = glade_xml_get_widget(xml, "frame1");
 	gtk_frame_set_label(GTK_FRAME(data), message);
+
 	data = glade_xml_get_widget(xml, "entry1");
 	entry = GTK_WIDGET(data);
 	gtk_entry_set_text(GTK_ENTRY(data), content);
+
+	gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
+
 	result = gtk_dialog_run(GTK_DIALOG(dbox));
-	switch (result) {
+	switch (result) 
+	{
 	case GTK_RESPONSE_OK:
 		ret = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
 		break;
@@ -221,5 +233,6 @@ char *msg_entry(const char *title, const char *message,
 		break;
 	}
 	gtk_widget_destroy(dbox);
+
 	return ret;
 }
